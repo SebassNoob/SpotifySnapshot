@@ -1,0 +1,86 @@
+
+
+
+
+
+
+body{
+  font-family: 'DM Sans', sans-serif;
+  background-image: radial-gradient(#303030 10%, #000000 90%);;
+}
+
+h1,p1{
+  color:white;
+}
+
+
+#title{
+  font-size: 100px
+}
+
+.desc{
+  font-size:25px;
+}
+.get-started{
+  background: linear-gradient(to right, #30CFD0, #c43ad6) !important;
+  border-radius:10px;
+  width: 500px;
+  height:60px;
+  font-size:20px;
+  margin-top:5px;
+}
+.nav-link {
+  background: linear-gradient(to right, #30CFD0, #c43ad6) !important;
+  color: black;
+}
+.nav-link:not(.active){
+  background:transparent !important;
+  color: white;
+}
+
+.nav-item{
+  scale:150%;
+}
+.card{
+  
+  
+  padding: 2px;
+  height: 234px;
+  width: 946px;
+  margin:auto;
+  color: white;
+  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background-color: gray;
+  border-radius: 10px;
+  box-shadow: 1px 1px 2px #ffffff;
+  background-color: transparent;
+  
+}
+
+.card::before{
+  content: '';
+  background-image: url('./assets/playlist.png');
+  background-size: cover;
+  margin-left: -2px;
+  margin-top: -2px;
+  height: 234px;
+  width: 946px;
+  position: relative;
+
+  z-index: -1;
+  
+}
+
+.text-glow {
+  text-shadow: 0 0 80px rgb(192 219 255 / 35%), 0 0 32px rgb(65 120 255 / 24%);
+}
+
+/* https://rareblocks.xyz/ */
+.text-gradient {
+  background: linear-gradient(to left, #30dd30, #20aadd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

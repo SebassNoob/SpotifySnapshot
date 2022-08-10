@@ -1,5 +1,5 @@
 import os
-from flask import Flask, redirect, request, make_response, render_template
+from flask import Flask, redirect, request, make_response, render_template, flash
 
 from dataclasses import dataclass
 import string
@@ -12,6 +12,7 @@ import datetime
 
 
 log = logging.getLogger('werkzeug')
+log.setLevel(logging.DEBUG)
 
 
 
@@ -35,6 +36,11 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
+  
+  return render_template('index.html')
+
+@app.route('/getit')
+def getit():
   if request.cookies.get('auth') is not None:
     '''if user has cookie with encoded auth token, take that to process'''
     
@@ -52,21 +58,25 @@ def index():
     username = json.loads(user.text).get('display_name')
     userid = json.loads(user.text).get('id')
     
-    
+    #get users top songs
     songs = requests.get('https://api.spotify.com/v1/me/top/tracks', headers = headers_const, params = {
       'limit':30,
       'offset':0,
       'time_range':'short_term'
     })
+    
     uris = []
     for song in json.loads(songs.text).get('items'):
-      
       uris.append(song.get('uri'))
-      
+
+
+    #creates a new playlist
     new_playlist = requests.post(f'https://api.spotify.com/v1/users/{userid}/playlists', headers = headers_const, data=json.dumps({
       'name': f"{username}'s favourite songs of {months_of_the_year[datetime.datetime.today().month-1]} {datetime.datetime.today().year}",
       'description':f"top songs of {username} as of {datetime.datetime.today()}"
     }))
+
+    #grabs the id to append to 
     new_playlist_id = json.loads(new_playlist.text).get('id')
 
     add_items = requests.post(f'https://api.spotify.com/v1/playlists/{new_playlist_id}/tracks', headers = headers_const, data = json.dumps({
@@ -78,7 +88,8 @@ def index():
     }))
     
     return str(json.loads(new_playlist.text).get('external_urls').get('spotify'))
-  return render_template('index.html')
+  #if accessed without logging/cookies, return to homepage and force to login
+  return render_template('getit-error.html'), {"Refresh": "5; url=/"}
 
 
 @app.route('/login')
