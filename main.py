@@ -34,10 +34,15 @@ months_of_the_year = ['January', 'February', 'March','April','May','June','July'
 app = Flask(__name__)
 
 
+
 @app.route('/')
 def index():
   
   return render_template('index.html')
+
+@app.route('/temp')
+def temp():
+  return render_template('getit.html')
 
 @app.route('/getit')
 def getit():
@@ -79,7 +84,7 @@ def getit():
     #grabs the id to append to 
     new_playlist_id = json.loads(new_playlist.text).get('id')
 
-    add_items = requests.post(f'https://api.spotify.com/v1/playlists/{new_playlist_id}/tracks', headers = headers_const, data = json.dumps({
+    requests.post(f'https://api.spotify.com/v1/playlists/{new_playlist_id}/tracks', headers = headers_const, data = json.dumps({
 
       'uris':uris,
       'position':0
@@ -89,7 +94,7 @@ def getit():
     
     return str(json.loads(new_playlist.text).get('external_urls').get('spotify'))
   #if accessed without logging/cookies, return to homepage and force to login
-  return render_template('getit-error.html'), {"Refresh": "5; url=/"}
+  return render_template('getit-error.html'), {"Refresh": "7; url=/"}
 
 
 @app.route('/login')

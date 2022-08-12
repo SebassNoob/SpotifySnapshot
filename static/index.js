@@ -16,11 +16,24 @@ function getCookie(cname) {
   return null;
 }
 
+function TC(){
+  let classesTC = $('#TC').attr('class').split(/\s+/);
+  
+  if (classesTC.includes("d-none")){
+    $('#TC').removeClass("d-none").addClass('d-show');
+    
+  }
+  if (classesTC.includes("d-show")){
+    $('#TC').removeClass("d-show").addClass('d-none');
+    
+  }
 
+}
 
 $('document').ready(()=>{
   const pathname = window.location.pathname;
   if (pathname === "/"){
+    
     console.log(getCookie('auth'))
     if (getCookie("auth") === null){
       $('#getit-link').addClass("disabled").css("color","grey");
@@ -31,12 +44,14 @@ $('document').ready(()=>{
     $('.get-started').click(()=>{
       window.location.pathname='/login';
     })
+    
+    
   }
   
   if (pathname === "/getit") {
 
     //countdown for error page
-    let count = 5;
+    let count = 7;
     setInterval(()=>{
       
       count -=1;

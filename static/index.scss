@@ -9,6 +9,18 @@ body{
   background-image: radial-gradient(#303030 10%, #000000 90%);;
 }
 
+input[type=checkbox]
+{
+  /* Double-sized Checkboxes */
+  -ms-transform: scale(1.4); /* IE */
+  -moz-transform: scale(1.4); /* FF */
+  -webkit-transform: scale(1.4); /* Safari and Chrome */
+  -o-transform: scale(1.4); /* Opera */
+  transform: scale(1.4);
+  padding: 10px;
+  margin:5px;
+}
+
 h1,p1{
   color:white;
 }
@@ -83,4 +95,36 @@ h1,p1{
   background: linear-gradient(to left, #30dd30, #20aadd);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.hide{
+  opacity:0;
+  
+}
+.show{
+  opacity:1;
+}
+
+.not-logged-in-err{
+  font-size:15px;
+  color:white;
+}
+
+#settings-form-title{
+  font-size:50px;
+}
+
+.form-labels{
+  color:white;
+  font-size:15px;
+}
+
+.tacbox {
+  display:block;
+  padding: 1em;
+  margin: 2em;
+  border: 3px solid #ddd;
+  background-color: #eee;
+  max-width: 800px;
+  border-radius: 10px;
 }
