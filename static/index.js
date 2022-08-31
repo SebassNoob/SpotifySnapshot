@@ -30,6 +30,8 @@ function TC(){
 
 }
 
+
+
 $('document').ready(()=>{
   const pathname = window.location.pathname;
   if (pathname === "/"){
@@ -59,9 +61,39 @@ $('document').ready(()=>{
         return count
       })
     }, 1000);
+
+  
+    //form validation
+    //when page is loaded, checkbox will always be unchecked hence disable the submit button
+    $('#submit-button').addClass('disabled');
+
     
+    $( 'input[type="checkbox"]' ).click(function() {
+      
+      if (this.checked){
+        
+        $('#submit-button').removeClass('disabled');
+      } else {
+        
+        $('#submit-button').addClass('disabled');
+      }
+      
+    });
     
-  }
+    $("#length-playlist").on("input",()=>{
+
+      let input = $("#length-playlist").val();
+
+      let validInt= input.match('^[0-9]*$');
+      
+      if (validInt && ((parseInt(input) <=50 && parseInt(input) >= 1 )|| input === "")){
+        $('#num-error').addClass("d-none").removeClass('d-show')
+      } else{
+        $('#num-error').removeClass("d-none").addClass('d-show')
+      }
+    });
+      
+    }
   
 
   

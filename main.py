@@ -1,37 +1,36 @@
 import os
 from flask import Flask, redirect, request, make_response, render_template, flash
 
-from dataclasses import dataclass
+import sqlite3
+
 import string
 import random
 import requests
 import base64
 import json 
 import logging
-import datetime
 
+from misc import make_playlist, get_user_data
+from db.init_db import create_db
 
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.DEBUG)
 
 
 
-@dataclass
-class Credentials:
-  id: str
-  secret: str
-  scope: str
-
 
 id = os.environ['id']
 secret = os.environ['secret']
 scope = "user-library-read user-top-read playlist-modify-public"
 
-months_of_the_year = ['January', 'February', 'March','April','May','June','July','August','September','October','November','December']
+
 
 
 
 app = Flask(__name__)
+
+
+
 
 
 
@@ -44,57 +43,44 @@ def index():
 def temp():
   return render_template('getit.html')
 
-@app.route('/getit')
+
+@app.route('/getit', methods = ['GET','POST'])
 def getit():
-  if request.cookies.get('auth') is not None:
-    '''if user has cookie with encoded auth token, take that to process'''
-    
-    auth = json.loads(base64.b64decode(request.cookies.get('auth')))
-
-    #constant headers for all required requests
-    headers_const = {
-      "Content-Type":"application/json",
-      "Authorization": f"Bearer {auth.get('access_token')}",
-      "Host": "api.spotify.com"
-    }
-    user = requests.get('https://api.spotify.com/v1/me', headers = headers_const )
-    #yoink the username and id for playlist creation
-    
-    username = json.loads(user.text).get('display_name')
-    userid = json.loads(user.text).get('id')
-    
-    #get users top songs
-    songs = requests.get('https://api.spotify.com/v1/me/top/tracks', headers = headers_const, params = {
-      'limit':30,
-      'offset':0,
-      'time_range':'short_term'
-    })
-    
-    uris = []
-    for song in json.loads(songs.text).get('items'):
-      uris.append(song.get('uri'))
-
-
-    #creates a new playlist
-    new_playlist = requests.post(f'https://api.spotify.com/v1/users/{userid}/playlists', headers = headers_const, data=json.dumps({
-      'name': f"{username}'s favourite songs of {months_of_the_year[datetime.datetime.today().month-1]} {datetime.datetime.today().year}",
-      'description':f"top songs of {username} as of {datetime.datetime.today()}"
-    }))
-
-    #grabs the id to append to 
-    new_playlist_id = json.loads(new_playlist.text).get('id')
-
-    requests.post(f'https://api.spotify.com/v1/playlists/{new_playlist_id}/tracks', headers = headers_const, data = json.dumps({
-
-      'uris':uris,
-      'position':0
-        
+  if request.method == 'GET':
+    if request.cookies.get('auth') is not None:
       
-    }))
-    
-    return str(json.loads(new_playlist.text).get('external_urls').get('spotify'))
+      return render_template('getit.html')
+    else: 
+      return render_template('getit-error.html'), {"Refresh": "7; url=/"}
+
+  
+  if request.method == 'POST':
+
+    #TODO: get all the params and redirect to /history/id
+    #TODO: add a "history" <a> tag in index.html
+    print(request.form['name'])
+    auth = json.loads(base64.b64decode(request.cookies.get('auth')))
+    creds= get_user_data(auth)
+    create_db(creds.id)
+    try:
+      make_playlist(auth, request.form['name'], request.form['length'])
+      
+    except:
+      return redirect('/error/500', 302)
+    return 'hello world'
   #if accessed without logging/cookies, return to homepage and force to login
   return render_template('getit-error.html'), {"Refresh": "7; url=/"}
+
+@app.route('/history')
+def history():
+  '''history homepage'''
+  return 'hi'
+
+@app.route('/history/<id>')
+def history_pages(id):
+  '''a list of past playlists'''
+  return id
+
 
 
 @app.route('/login')
