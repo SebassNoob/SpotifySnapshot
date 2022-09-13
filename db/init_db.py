@@ -9,6 +9,8 @@ def create_db(id):
     return False
   open(f"db/data/{id}.db", 'w+')
   connection = sqlite3.connect(f'db/data/{id}.db')
+  print(f"created db/data/{id}.db")
+
   
   with open('db/schema.sql') as f:
     connection.executescript(f.read())

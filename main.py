@@ -1,8 +1,9 @@
 import os
 from flask import Flask, redirect, request, make_response, render_template, flash
 
+import datetime
 import sqlite3
-
+from pathlib import Path
 import string
 import random
 import requests
@@ -10,7 +11,7 @@ import base64
 import json 
 import logging
 
-from misc import make_playlist, get_user_data
+from misc import make_playlist, get_user_data, get_connection
 from db.init_db import create_db
 
 log = logging.getLogger('werkzeug')
@@ -27,9 +28,16 @@ scope = "user-library-read user-top-read playlist-modify-public"
 
 
 
+  
+
+
 app = Flask(__name__)
 
-
+def debug_sql(id):
+  con = sqlite3.connect(id).cursor()
+  data = con.execute("SELECT * FROM endUser").fetchall()
+  for row in data:
+    print(row)
 
 
 
@@ -58,14 +66,29 @@ def getit():
 
     #TODO: get all the params and redirect to /history/id
     #TODO: add a "history" <a> tag in index.html
-    print(request.form['name'])
+    
     auth = json.loads(base64.b64decode(request.cookies.get('auth')))
     creds= get_user_data(auth)
-    create_db(creds.id)
-    try:
-      make_playlist(auth, request.form['name'], request.form['length'])
+    #creates a user profile if not exists
+    if not Path(f'./db/data/{creds.id}.db').is_file():
       
-    except:
+      create_db(creds.id)
+      
+    
+    try:
+      url = make_playlist(auth, request.form['name'], request.form['length'])
+
+      conn, cur = get_connection(f'./db/data/{creds.id}.db')
+      
+      cur.execute('INSERT INTO endUser (created, url) VALUES (?,?)', (f"{datetime.datetime.today().strftime('%d-%m-%Y')}", url))
+      conn.commit()
+      conn.close()
+      debug_sql(f'./db/data/{creds.id}.db')
+      
+    
+      
+    except Exception as e:
+      print(e)
       return redirect('/error/500', 302)
     return 'hello world'
   #if accessed without logging/cookies, return to homepage and force to login

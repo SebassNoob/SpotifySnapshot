@@ -2,6 +2,7 @@
 import requests
 import json
 import datetime
+import sqlite3
 
 from dataclasses import dataclass
 @dataclass
@@ -56,7 +57,7 @@ def make_playlist(auth:str, name: str, length: int):
         
       
   }))
-  return
+  return f'https://open.spotify.com/playlist/{new_playlist_id}'
     
 
 
@@ -73,4 +74,8 @@ def get_user_data(auth:str):
     
   return Credentials(json.loads(user.text).get('id'), json.loads(user.text).get('display_name'), json.loads(user.text).get('images')[0].get("url"))
   
-  
+def get_connection(path):
+  #returns connection and cursor object
+  con = sqlite3.connect(path)
+  cur= con.cursor()
+  return (con,cur)
