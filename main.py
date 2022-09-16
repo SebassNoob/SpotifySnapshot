@@ -155,8 +155,10 @@ def callback():
 
 
 @app.route('/error/<id>')
-def error(id):
-  return id
+def error(id: int):
+  if type(id) != int: id=500
+    
+  return render_template('error.html', id = id)
 
   
 app.run(host='0.0.0.0', port = 8080, debug=True)

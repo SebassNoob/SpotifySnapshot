@@ -40,6 +40,8 @@ h1,p1{
   height:60px;
   font-size:20px;
   margin-top:5px;
+  color: black;
+  
 }
 .nav-link {
   background: linear-gradient(to right, #30CFD0, #c43ad6) !important;
@@ -148,4 +150,9 @@ h1,p1{
 
 .social-icon:hover{
   opacity: 0.75;
+}
+
+#error-code{
+  font-size: 70px;
+  margin: 20px;
 }
