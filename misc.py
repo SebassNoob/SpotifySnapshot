@@ -34,7 +34,7 @@ def make_playlist(auth:str, name: str, length: int):
     
     #get users top songs
   songs = requests.get('https://api.spotify.com/v1/me/top/tracks', headers = headers_const, params = {
-    'limit':30,
+    'limit':length or 30,
     'offset':0,
     'time_range':'short_term'
   })
@@ -46,7 +46,7 @@ def make_playlist(auth:str, name: str, length: int):
 
     #creates a new playlist
   new_playlist = requests.post(f'https://api.spotify.com/v1/users/{userid}/playlists', headers = headers_const, data=json.dumps({
-    'name': f"{username}'s favourite songs of {months_of_the_year[datetime.datetime.today().month-1]} {datetime.datetime.today().year}",
+    'name': name or f"{username}'s favourite songs of {months_of_the_year[datetime.datetime.today().month-1]} {datetime.datetime.today().year}",
     'description':f"top songs of {username} as of {datetime.datetime.today()}"
   }))
 
