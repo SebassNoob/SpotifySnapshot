@@ -4,6 +4,9 @@ import json
 import datetime
 import sqlite3
 
+import aiohttp
+import asyncio
+
 from dataclasses import dataclass
 @dataclass
 class Credentials:
@@ -57,8 +60,43 @@ def make_playlist(auth:str, name: str, length: int):
         
       
   }))
-  return f'https://open.spotify.com/playlist/{new_playlist_id}'
+  #returns both the url and the id of the playlist
+  return (f'https://open.spotify.com/playlist/{new_playlist_id}', new_playlist_id)
     
+
+
+
+
+def get_playlist_info(auth:str, id:int):
+  
+  '''grabs playlist information given id'''
+  
+
+  #constant headers for all required requests
+  headers_const = {
+    "Content-Type":"application/json",
+    "Authorization": f"Bearer {auth.get('access_token')}",
+    "Host": "api.spotify.com"
+  }
+
+  request_urls = [
+    f'https://api.spotify.com/v1/playlists/{id}/tracks',
+    f'https://api.spotify.com/v1/playlists/{id}'
+  ]
+  async def request(list_urls:list):
+    async with aiohttp.ClientSession(headers=headers_const) as session:
+      responses = []
+      for url in request_urls:
+        async with session.get(url) as resp:
+          responses.append(await resp.json())
+          
+    return responses
+
+  
+  res= asyncio.run(request(request_urls))
+  
+  
+  return res
 
 
 
@@ -70,7 +108,7 @@ def get_user_data(auth:str):
     "Host": "api.spotify.com"
   }
   user = requests.get('https://api.spotify.com/v1/me', headers = headers_const )
-    #yoink the username and id for playlist creation
+    
     
   return Credentials(json.loads(user.text).get('id'), json.loads(user.text).get('display_name'), json.loads(user.text).get('images')[0].get("url"))
   
@@ -79,3 +117,17 @@ def get_connection(path):
   con = sqlite3.connect(path)
   cur= con.cursor()
   return (con,cur)
+
+
+def synchronize_async_helper(to_await):
+  '''runs async funcs synchronously'''
+  async_response = []
+
+  async def run_and_capture_result():
+    r = await to_await
+    async_response.append(r)
+  
+  loop = asyncio.get_event_loop()
+  coroutine = run_and_capture_result()
+  loop.run_until_complete(coroutine)
+  return async_response[0]

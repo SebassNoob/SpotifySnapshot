@@ -11,7 +11,7 @@ import base64
 import json 
 import logging
 
-from misc import make_playlist, get_user_data, get_connection
+from misc import make_playlist, get_user_data, get_connection, get_playlist_info, synchronize_async_helper
 from db.init_db import create_db
 
 log = logging.getLogger('werkzeug')
@@ -34,8 +34,8 @@ scope = "user-library-read user-top-read playlist-modify-public"
 app = Flask(__name__)
 
 def debug_sql(id):
-  con = sqlite3.connect(id).cursor()
-  data = con.execute("SELECT * FROM endUser").fetchall()
+  conn = sqlite3.connect(id).cursor()
+  data = conn.execute("SELECT * FROM endUser").fetchall()
   for row in data:
     print(row)
 
@@ -76,21 +76,24 @@ def getit():
       
     
     try:
-      url = make_playlist(auth, request.form['name'], request.form['length'])
+      url, playlist_id = make_playlist(auth, request.form['name'], request.form['length'])
 
       conn, cur = get_connection(f'./db/data/{creds.id}.db')
       
-      cur.execute('INSERT INTO endUser (created, url) VALUES (?,?)', (f"{datetime.datetime.today().strftime('%d-%m-%Y')}", url))
+      cur.execute('INSERT INTO endUser (created, url, playlist_id) VALUES (?,?,?)', (f"{datetime.datetime.today().strftime('%d-%m-%Y')}", url, playlist_id))
       conn.commit()
-      conn.close()
+      
       debug_sql(f'./db/data/{creds.id}.db')
+
+      #gets id for playlist for redirection
+      #nessessary because connection is closed
+      playlist_id_in_db = cur.lastrowid
       
-    
-      
+      conn.close()
     except Exception as e:
       print(e)
       return redirect('/error/500', 302)
-    return 'hello world'
+  return redirect(f"/history/{playlist_id_in_db}")
   #if accessed without logging/cookies, return to homepage and force to login
   return render_template('getit-error.html'), {"Refresh": "7; url=/"}
 
@@ -101,8 +104,24 @@ def history():
 
 @app.route('/history/<id>')
 def history_pages(id):
-  '''a list of past playlists'''
-  return id
+  '''a list of songs in past playlists'''
+  try:
+    auth = json.loads(base64.b64decode(request.cookies.get('auth')))
+  except TypeError:
+    return render_template('getit-error.html'), {"Refresh": "7; url=/"}
+  creds= get_user_data(auth)
+  #find the db
+  conn, cur = get_connection(f'./db/data/{creds.id}.db')
+
+  #gets the row with info needed
+  row = cur.execute("SELECT * FROM enduser WHERE (id) == (?)", (id,)).fetchone()
+  conn.close()
+
+  #row[3] is the playlist id to make request with
+
+  tracks, playlist = get_playlist_info(auth, row[3])
+  
+  return tracks
 
 
 
