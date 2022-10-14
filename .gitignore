@@ -1,1 +1,6 @@
 db/**/**
+venv/**
+.replit
+.breakpoints
+pyproject.toml
+replit.nix
